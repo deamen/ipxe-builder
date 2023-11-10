@@ -1,0 +1,41 @@
+name: Build iPXE
+
+on:
+  workflow_call:
+
+  push:
+    branches: [ "master" ]
+    paths-ignore:
+       - 'out/*'
+       - 'LICENSE'
+       - 'README.md'
+  pull_request:
+    branches: [ "master" ]
+  
+        
+jobs:
+  build-ipxe-file:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install buildah
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y buildah qemu-user-static
+
+      - name: Build the iPXE
+        run: ./build_ipxe.sh
+
+      - name: Create ipxe.tar.xz
+        run: |
+          cd ./out &&
+          tar -cJf ../ipxe.tar.xz ipxe.*
+        
+      - name: Upload the iPXE tarball
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 #v3.1.0
+        with:
+          name: ipxe.tar.xz
+          path: ipxe.tar.xz
+          retention-days: 1
